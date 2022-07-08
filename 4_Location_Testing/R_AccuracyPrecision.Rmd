@@ -1,0 +1,106 @@
+---
+title: "MM 15/07/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+library(readxl)
+library(Metrics)
+data = read_excel('Prueba_Ubicacion.xls',
+                  '3_todos')
+
+#data2 <- data [,-1]   # Forma simple 2
+head(data)
+```
+```{r}
+round(max(data$DeltaX),2)
+round(max(data$DeltaY),2)
+round(max(data$DeltaZ),2)
+
+round(rmse(data$x_a, data$x_p),2)
+round(rmse(data$y_a, data$y_p),2)
+round(rmse(data$z_a, data$z_p),2)
+```   
+
+```{r}
+data$Distancia
+```
+
+
+```{r}
+coef_var <- function(x, na.rm = FALSE) {
+  (sd(x, na.rm=na.rm) )/ mean(x, na.rm=na.rm)
+}
+```
+
+
+
+```{r}
+
+round(max(data$Distancia),2)
+round(min(data$Distancia),2)
+round(mean(data$Distancia),2)
+round(sd(data$Distancia),2)
+round(coef_var(x=data$Distancia, na.rm=T),2)
+round(rmse(data$Distancia_a, data$Distancia),2)
+
+mean(data$Distancia)
+sd(data$Distancia)
+coef_var(x=data$Distancia, na.rm=T)
+rmse(data$Distancia_a, data$Distancia)
+mae(data$Distancia_a, data$Distancia)
+mse(data$Distancia_a, data$Distancia)
+```
+
+```{r}
+library(Metrics)
+median(data$x_p)
+mean(data$x_p)
+sd(data$x_p)
+coef_var(x=data$x_p, na.rm=T)
+rmse(data$x_a, data$x_p)
+```
+
+```{r}
+library(Metrics)
+median(data$y_p)
+mean(data$y_p)
+sd(data$y_p)
+coef_var(x=data$y_p, na.rm=T)
+rmse(data$y_a, data$y_p)
+```
+```{r}
+library(Metrics)
+median(data$z_p)
+mean(data$z_p)
+sd(data$z_p)
+coef_var(x=data$z_p, na.rm=T)
+rmse(data$z_a, data$z_p)
+```
+
+
+```{r}
+par(mfrow = c(2,1))
+boxplot(x = data$Distancia, horizontal = TRUE, ylim = c(0,3))
+hist(x = data$Distancia,xlim = c(0,3))
+abline(v=median(data$Distancia), col="red")
+abline(v=mean(data$Distancia), col="blue")
+par(mfrow = c(1,1))
+```
+
+```{r}
+hist(data$Distancia, freq = FALSE, main = "Histograma y densidad",
+     ylab = "Densidad")
+dx <- density(data$Distancia)
+lines(dx, lwd = 2, col = "red")
+plot(dx, lwd = 2, col = "red",
+     main = "Densidad")
+rug(jitter(data$Distancia))
+abline(v=median(data$Distancia), col="red")
+abline(v=mean(data$Distancia), col="blue")
+```
+
+
+

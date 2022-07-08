@@ -1,0 +1,118 @@
+---
+title: "MM 15/07/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+library(readxl)
+data = read_excel('MeasuresRSSI.xlsx',
+                  'ConObstaculos_v2')
+
+#data2 <- data [,-1]   # Forma simple 2
+head(data)
+dim(data)
+```
+
+```{r}
+data_m <- c(1,4,6,8,10)
+data3 <-as.data.frame(apply(data,2, median))
+data3<-cbind(data3,data_m)  
+names (data3) = c("RSSI","Metros")
+data3
+```
+
+```{r}
+library(dplyr)
+#data4 = data3 %>% select(Metros, RSSI, RSSI_Cal)
+data_col = cbind (data [0:0], stack(data[1:5]))
+names (data_col) = c("RSSI","Distancia")
+data_col
+
+library(reshape2)
+library(ggplot2)
+ggplot(data = data_col, aes(x = Distancia, y = RSSI)) +
+geom_boxplot(aes(fill = Distancia))+
+#scale_y_continuous(limits = c(0,200000))+
+stat_boxplot(geom ='errorbar')+
+ylab("RSSI")+
+xlab("Distancia (m)")+
+theme(text = element_text(size=17), legend.position="none")
+#ggtitle("Diagrama de cajas - Precio x Habitaciones")
+```
+
+```{r}
+
+rssiR =round(data3$RSSI[1],0)
+data3$RSSI[1]=rssiR
+rssiR
+
+norte <- function(dis,rssiM) {
+  resultado <- (rssiR-rssiM)/(10*(log10(dis)))
+  return(resultado)
+}
+
+
+
+Calculon<-function(df){
+  
+  for (indiceFila in 1:nrow(df)) {
+    df$n[indiceFila]<-norte(df$Metros[indiceFila],df$RSSI[indiceFila])
+  }
+  return(df)
+}
+
+
+data3 <- Calculon(data3)
+data3[is.na(data3)] <- 0
+data3
+
+n2 = round(mean(data3$n[-c(1)]),1)
+n = 3.0
+
+rssi_cal <- function(dis) {
+  resultado <- -((10*n*(log10(dis)))-(rssiR))
+  return(resultado)
+}
+
+
+CalculoRSSI<-function(df){
+  
+  for (indiceFila in 1:nrow(df)) {
+    df$RSSI_Cal[indiceFila]<-rssi_cal(df$Metros[indiceFila])
+  }
+  return(df)
+}
+
+data3 <- CalculoRSSI(data3)
+data3[is.na(data3)] <- 0
+data3
+```
+
+
+```{r}
+library(dplyr)
+data4 = data3 %>% select(Metros, RSSI, RSSI_Cal)
+data5 = cbind (data4 [0:1], stack(data4[2:3]))
+names (data5) = c("Metros","RSSI","Tipo")
+data5
+```
+
+```{r}
+library(ggplot2)
+ggplot(data5, aes(x=Metros, y=RSSI, color=Tipo)) + 
+  geom_line()  +
+  geom_point( size=4, shape=21, fill="white") + 
+  theme_minimal()+
+  theme(axis.title = element_text(size = 14, angle=0))+
+  theme(axis.text = element_text(size = 13, angle=0))+
+  theme(legend.position = "bottom")+
+  theme(legend.text = element_text(size = 14))+
+  scale_y_continuous("RSSI (dbm)") + 
+  scale_x_continuous("Distance (m)", breaks = c(1,2,3,4,5,6,7,8,9,10)) + 
+  scale_color_discrete(NULL,labels = c("RSSI Measured","RSSI Theoretical"))
+```
+
+
+
